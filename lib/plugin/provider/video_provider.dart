@@ -8,6 +8,7 @@ class VideoProvider extends ChangeNotifier {
   int overlayTimer = 3;
   Duration currentSeekPosition = Duration.zero;
   var selectedQuality = 0;
+  bool isLooping = true;
   var qualityItems = [
     const DropdownMenuItem(
       value: 0,
@@ -86,5 +87,17 @@ class VideoProvider extends ChangeNotifier {
     selectedQuality = value!;
     initController();
     notifyListeners();
+  }
+
+  void toggleLoop() {
+    if (controller.value.isLooping) {
+      isLooping = false;
+      controller.setLooping(isLooping);
+    } else {
+      isLooping = true;
+      controller.setLooping(isLooping);
+      controller.play();
+    }
+    overlayDisplay();
   }
 }

@@ -48,10 +48,15 @@ class HomePage extends StatelessWidget {
       children: [
         const Spacer(),
         SizedBox(
-          height: 200,
+          // height: 200,
           child: VideoPlayerILS(
-            // controller: VideoPlayerController.networkUrl(Uri.parse(
-            //     'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4')),
+            videoPlayerTheme: VideoPlayerTheme(
+                seekLeftColor: Colors.amber,
+                seekRightColor: Colors.blue,
+                playIconActive: Icons.ads_click,
+                playIconInactive: Icons.file_download,
+                loopIconColorActive: Colors.green,
+                seekProgressBarColor: Colors.amber),
             urls: [
               VideoQualityModel(
                   url:
