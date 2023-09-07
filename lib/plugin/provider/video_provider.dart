@@ -36,6 +36,8 @@ class VideoProvider extends ChangeNotifier {
   }
 
   void initController(Function(dynamic p1) errorCallback) {
+    showLoader = true;
+    notifyListeners();
     controller = VideoPlayerController.networkUrl(
         Uri.parse(url[selectedQuality].url),
         videoPlayerOptions: VideoPlayerOptions())
@@ -48,17 +50,17 @@ class VideoProvider extends ChangeNotifier {
             showLoader = false;
             notifyListeners();
           }
-          showLoader = true;
-          notifyListeners();
+          // showLoader = true;
+          // notifyListeners();
           if (controller.value.isInitialized) {
             showLoader = false;
             notifyListeners();
           }
-          if (controller.value.isBuffering) {
+          if (controller.value.isInitialized && controller.value.isBuffering) {
             showLoader = true;
             notifyListeners();
           }
-          if (controller.value.isPlaying) {
+          if (controller.value.isInitialized && controller.value.isPlaying) {
             showLoader = false;
             notifyListeners();
           }
