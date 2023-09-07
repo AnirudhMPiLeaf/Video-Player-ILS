@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
@@ -32,9 +34,10 @@ class VideoPlayerILS extends StatefulWidget {
 class _VideoPlayerILSState extends State<VideoPlayerILS> {
   bool shouldShowOverlay = false;
   bool isPortrait = true;
-
+  late Timer timer;
   @override
   void initState() {
+    timer = Timer.periodic(Duration.zero, (timer) {});
     overlayShow();
     SystemChrome.setPreferredOrientations(
       [
@@ -43,6 +46,12 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
       ],
     );
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    timer.cancel();
+    super.dispose();
   }
 
   @override
@@ -182,9 +191,9 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                           top: 0,
                           right: 0,
                           child: shouldShowOverlay
-                              ? provider.controller.value.errorDescription
+                              ? (provider.controller.value.errorDescription
                                           ?.isEmpty ??
-                                      true
+                                      true)
                                   ? Row(
                                       children: [
                                         TextButton(
@@ -217,7 +226,7 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                                         ),
                                         DropdownButton2(
                                           isDense: true,
-                                          underline: null,
+                                          underline: const SizedBox(),
                                           isExpanded: false,
                                           items: List.generate(
                                               widget.urls.length,
@@ -243,14 +252,22 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                                               color: Colors.red,
                                             ),
                                           ),
-                                          onChanged: (value) =>
-                                              provider.setQuality(
-                                                  value, widget.errorCallback),
+                                          onMenuStateChange: (isOpen) =>
+                                              overlayShow(seconds: 15),
+                                          onChanged: (value) {
+                                            provider.setQuality(
+                                                value, widget.errorCallback);
+                                            overlayShow(seconds: 0);
+                                            setState(() {
+                                              provider.showLoader = true;
+                                            });
+                                          },
                                         ),
+                                        const SizedBox(width: 10),
                                       ],
                                     )
                                   : const SizedBox()
-                              : const Center(child: SizedBox()),
+                              : const SizedBox(),
                         ),
                         Positioned(
                           bottom: 0,
@@ -419,16 +436,20 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
     }
   }
 
-  Future<void> overlayShow() async {
+  Future<void> overlayShow({int seconds = 3}) async {
     try {
       if (mounted) {
         shouldShowOverlay = true;
         setState(() {});
-        await Future.delayed(const Duration(seconds: 3)).then((value) {
+        if (timer.isActive) {
+          timer.cancel();
+        }
+        timer = Timer.periodic(Duration(seconds: seconds), (timer) {
           setState(() {
             shouldShowOverlay = false;
           });
         });
+        // Future.delayed().then((value) {});
       }
     } catch (_) {}
   }
