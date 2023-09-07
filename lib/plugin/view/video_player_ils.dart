@@ -184,7 +184,7 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                           child: shouldShowOverlay
                               ? provider.controller.value.errorDescription
                                           ?.isEmpty ??
-                                      false
+                                      true
                                   ? Row(
                                       children: [
                                         TextButton(
