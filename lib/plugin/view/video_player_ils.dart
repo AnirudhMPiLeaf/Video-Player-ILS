@@ -10,11 +10,19 @@ import 'package:video_player_ils/plugin/provider/video_provider.dart';
 import 'components.dart';
 
 class VideoPlayerILS extends StatefulWidget {
-  const VideoPlayerILS(
-      {super.key, required this.urls, this.controller, this.videoPlayerTheme});
+  const VideoPlayerILS({
+    super.key,
+    required this.urls,
+    this.controller,
+    this.videoPlayerTheme,
+    this.thumb,
+    required this.errorCallback,
+  });
   final List<VideoQualityModel> urls;
   final VideoPlayerController? controller;
   final VideoPlayerTheme? videoPlayerTheme;
+  final Function(dynamic) errorCallback;
+  final Widget? thumb;
   @override
   State<VideoPlayerILS> createState() => _VideoPlayerILSState();
 }
@@ -37,12 +45,15 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
 
   @override
   Widget build(BuildContext context) {
-    // toggleFullScreen();
     return Material(
       color: Colors.transparent,
       child: ChangeNotifierProvider(
         lazy: false,
-        create: (context) => VideoProvider(widget.urls, widget.controller),
+        create: (context) => VideoProvider(
+          widget.urls,
+          widget.errorCallback,
+          widget.controller,
+        ),
         child: Consumer<VideoProvider>(
           builder: (context, provider, child) {
             return Padding(
@@ -57,65 +68,91 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                     VideoPlayer(
                       widget.controller ?? provider.controller,
                     ),
+                    if (!provider.controller.value.isPlaying &&
+                        (provider.controller.value.position == Duration.zero))
+                      Positioned.fill(child: widget.thumb ?? const SizedBox()),
                     Positioned.fill(
                       child: InkWell(
-                        onTap: () => overlayShow(),
-                        onHover: (value) => overlayShow(),
+                        onTap: () {
+                          if (provider
+                                  .controller.value.errorDescription?.isEmpty ??
+                              true) {
+                            overlayShow();
+                          }
+                        },
+                        onHover: (value) {
+                          if (provider
+                                  .controller.value.errorDescription?.isEmpty ??
+                              true) {
+                            overlayShow();
+                          }
+                        },
                         child: shouldShowOverlay
-                            ? Row(
-                                children: [
-                                  Expanded(
-                                    child: ButtonComponent(
-                                      singleTap: () => provider.seekLeft(),
-                                      doubleTap: () => provider.seekLeft(),
-                                      isFlipped: true,
-                                      buttonWidget: widget
-                                          .videoPlayerTheme?.seekLeftWidget,
-                                      color: widget.videoPlayerTheme
-                                              ?.seekLeftColor ??
-                                          Colors.red,
-                                      icon: widget
-                                              .videoPlayerTheme?.seekLeftIcon ??
-                                          Icons.refresh,
-                                      size: widget
-                                              .videoPlayerTheme?.seekLeftSize ??
-                                          40,
+                            ? Center(
+                                child: Row(
+                                  children: [
+                                    if (provider.controller.value.isInitialized)
+                                      Expanded(
+                                        flex: 2,
+                                        child: ButtonComponent(
+                                          singleTap: () => provider.seekLeft(),
+                                          doubleTap: () => provider.seekLeft(),
+                                          isFlipped: true,
+                                          buttonWidget: widget
+                                              .videoPlayerTheme?.seekLeftWidget,
+                                          color: widget.videoPlayerTheme
+                                                  ?.seekLeftColor ??
+                                              Colors.red,
+                                          icon: widget.videoPlayerTheme
+                                                  ?.seekLeftIcon ??
+                                              Icons.refresh,
+                                          size: widget.videoPlayerTheme
+                                                  ?.seekLeftSize ??
+                                              40,
+                                        ),
+                                      ),
+                                    Expanded(
+                                      child: ButtonComponent(
+                                        singleTap: () => provider.togglePlay(),
+                                        buttonWidget:
+                                            widget.videoPlayerTheme?.playWidget,
+                                        color: widget
+                                                .videoPlayerTheme?.playColor ??
+                                            Colors.red,
+                                        icon:
+                                            provider.controller.value.isPlaying
+                                                ? widget.videoPlayerTheme
+                                                        ?.playIconInactive ??
+                                                    Icons.pause
+                                                : widget.videoPlayerTheme
+                                                        ?.playIconActive ??
+                                                    Icons.play_arrow,
+                                        size:
+                                            widget.videoPlayerTheme?.playSize ??
+                                                50,
+                                      ),
                                     ),
-                                  ),
-                                  ButtonComponent(
-                                    singleTap: () => provider.togglePlay(),
-                                    buttonWidget:
-                                        widget.videoPlayerTheme?.playWidget,
-                                    color: widget.videoPlayerTheme?.playColor ??
-                                        Colors.red,
-                                    icon: provider.controller.value.isPlaying
-                                        ? widget.videoPlayerTheme
-                                                ?.playIconInactive ??
-                                            Icons.pause
-                                        : widget.videoPlayerTheme
-                                                ?.playIconActive ??
-                                            Icons.play_arrow,
-                                    size:
-                                        widget.videoPlayerTheme?.playSize ?? 50,
-                                  ),
-                                  Expanded(
-                                    child: ButtonComponent(
-                                      singleTap: () => provider.seekRight(),
-                                      doubleTap: () => provider.seekRight(),
-                                      buttonWidget: widget
-                                          .videoPlayerTheme?.seekRightWidget,
-                                      color: widget.videoPlayerTheme
-                                              ?.seekRightColor ??
-                                          Colors.red,
-                                      icon: widget.videoPlayerTheme
-                                              ?.seekRightIcon ??
-                                          Icons.refresh,
-                                      size: widget.videoPlayerTheme
-                                              ?.seekRightSize ??
-                                          40,
-                                    ),
-                                  )
-                                ],
+                                    if (provider.controller.value.isInitialized)
+                                      Expanded(
+                                        flex: 2,
+                                        child: ButtonComponent(
+                                          singleTap: () => provider.seekRight(),
+                                          doubleTap: () => provider.seekRight(),
+                                          buttonWidget: widget.videoPlayerTheme
+                                              ?.seekRightWidget,
+                                          color: widget.videoPlayerTheme
+                                                  ?.seekRightColor ??
+                                              Colors.red,
+                                          icon: widget.videoPlayerTheme
+                                                  ?.seekRightIcon ??
+                                              Icons.refresh,
+                                          size: widget.videoPlayerTheme
+                                                  ?.seekRightSize ??
+                                              40,
+                                        ),
+                                      )
+                                  ],
+                                ),
                               )
                             : const Center(
                                 child: SizedBox(
@@ -127,60 +164,67 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                       top: 0,
                       right: 0,
                       child: shouldShowOverlay
-                          ? Row(
-                              children: [
-                                TextButton(
-                                  onPressed: () => provider.toggleLoop(),
-                                  child: widget.videoPlayerTheme?.loopWidget ??
-                                      Container(
+                          ? provider.controller.value.errorDescription
+                                      ?.isEmpty ??
+                                  false
+                              ? Row(
+                                  children: [
+                                    TextButton(
+                                      onPressed: () => provider.toggleLoop(),
+                                      child: widget
+                                              .videoPlayerTheme?.loopWidget ??
+                                          Container(
+                                            padding: const EdgeInsets.all(8.0),
+                                            decoration: BoxDecoration(
+                                                color:
+                                                    Colors.black.withAlpha(150),
+                                                borderRadius:
+                                                    const BorderRadius.all(
+                                                        Radius.circular(25))),
+                                            child: Icon(
+                                              Icons.loop,
+                                              color: provider.isLooping
+                                                  ? widget.videoPlayerTheme
+                                                          ?.loopIconColorActive ??
+                                                      Colors.red
+                                                  : widget.videoPlayerTheme
+                                                          ?.loopIconColorInactive ??
+                                                      Colors.red.withAlpha(150),
+                                            ),
+                                          ),
+                                    ),
+                                    DropdownButton2(
+                                      isDense: true,
+                                      underline: null,
+                                      isExpanded: false,
+                                      items: List.generate(
+                                          widget.urls.length,
+                                          (index) => DropdownMenuItem(
+                                                value: index,
+                                                child: Text(
+                                                    widget.urls[index].name),
+                                              )).toList(),
+                                      // provider.qualityItems,
+                                      dropdownStyleData:
+                                          const DropdownStyleData(width: 100),
+                                      customButton: Container(
                                         padding: const EdgeInsets.all(8.0),
                                         decoration: BoxDecoration(
                                             color: Colors.black.withAlpha(150),
                                             borderRadius:
                                                 const BorderRadius.all(
                                                     Radius.circular(25))),
-                                        child: Icon(
-                                          Icons.loop,
-                                          color: provider.isLooping
-                                              ? widget.videoPlayerTheme
-                                                      ?.loopIconColorActive ??
-                                                  Colors.red
-                                              : widget.videoPlayerTheme
-                                                      ?.loopIconColorInactive ??
-                                                  Colors.red.withAlpha(150),
+                                        child: const Icon(
+                                          Icons.more_horiz,
+                                          color: Colors.red,
                                         ),
                                       ),
-                                ),
-                                DropdownButton2(
-                                  isDense: true,
-                                  underline: null,
-                                  isExpanded: false,
-                                  items: List.generate(
-                                      widget.urls.length,
-                                      (index) => DropdownMenuItem(
-                                            value: index,
-                                            child:
-                                                Text(widget.urls[index].name),
-                                          )).toList(),
-                                  // provider.qualityItems,
-                                  dropdownStyleData:
-                                      const DropdownStyleData(width: 100),
-                                  customButton: Container(
-                                    padding: const EdgeInsets.all(8.0),
-                                    decoration: BoxDecoration(
-                                        color: Colors.black.withAlpha(150),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(25))),
-                                    child: const Icon(
-                                      Icons.more_horiz,
-                                      color: Colors.red,
+                                      onChanged: (value) => provider.setQuality(
+                                          value, widget.errorCallback),
                                     ),
-                                  ),
-                                  onChanged: (value) =>
-                                      provider.setQuality(value),
-                                ),
-                              ],
-                            )
+                                  ],
+                                )
+                              : const SizedBox()
                           : const Center(child: SizedBox()),
                     ),
                     Positioned(
@@ -190,60 +234,100 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                       child: shouldShowOverlay
                           ? ColoredBox(
                               color: Colors.black.withAlpha(150),
-                              child: Column(
+                              child: Row(
                                 children: [
-                                  ProgressBar(
-                                    progressBarColor: widget.videoPlayerTheme
-                                            ?.seekProgressBarColor ??
-                                        Colors.red,
-                                    baseBarColor: widget.videoPlayerTheme
-                                            ?.seekBaseBarColor ??
-                                        Colors.grey.withAlpha(150),
-                                    thumbColor: widget
-                                            .videoPlayerTheme?.seekThumbColor ??
-                                        Colors.red,
-                                    thumbGlowColor: widget.videoPlayerTheme
-                                            ?.seekThumbGlowColor ??
-                                        Colors.red.withAlpha(100),
-                                    timeLabelType: widget.videoPlayerTheme
-                                            ?.seekTimeLabelType ??
-                                        TimeLabelType.remainingTime,
-                                    bufferedBarColor: widget.videoPlayerTheme
-                                            ?.seekBufferedBarColor ??
-                                        Colors.grey,
-                                    timeLabelTextStyle: widget.videoPlayerTheme
-                                            ?.seekTimeLabelTextStyle ??
-                                        const TextStyle(color: Colors.white),
-                                    progress: Duration(
-                                        milliseconds: provider.controller.value
-                                            .position.inMilliseconds),
-                                    buffered: Duration(
-                                        milliseconds: provider.controller.value
-                                                .buffered.isEmpty
-                                            ? 0
-                                            : provider.controller.value.buffered
-                                                .last.end.inMilliseconds),
-                                    total: Duration(
-                                        milliseconds: provider.controller.value
-                                            .duration.inMilliseconds),
-                                    onSeek: (duration) =>
-                                        provider.seekChanged(duration),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: ProgressBar(
+                                      progressBarColor: widget.videoPlayerTheme
+                                              ?.seekProgressBarColor ??
+                                          Colors.red,
+                                      baseBarColor: widget.videoPlayerTheme
+                                              ?.seekBaseBarColor ??
+                                          Colors.grey.withAlpha(150),
+                                      thumbColor: widget.videoPlayerTheme
+                                              ?.seekThumbColor ??
+                                          Colors.red,
+                                      thumbGlowColor: widget.videoPlayerTheme
+                                              ?.seekThumbGlowColor ??
+                                          Colors.red.withAlpha(100),
+                                      timeLabelType: widget.videoPlayerTheme
+                                              ?.seekTimeLabelType ??
+                                          TimeLabelType.remainingTime,
+                                      bufferedBarColor: widget.videoPlayerTheme
+                                              ?.seekBufferedBarColor ??
+                                          Colors.grey,
+                                      timeLabelTextStyle: widget
+                                              .videoPlayerTheme
+                                              ?.seekTimeLabelTextStyle ??
+                                          const TextStyle(color: Colors.white),
+                                      progress: Duration(
+                                          milliseconds: provider.controller
+                                              .value.position.inMilliseconds),
+                                      buffered: Duration(
+                                          milliseconds: provider.controller
+                                                  .value.buffered.isEmpty
+                                              ? 0
+                                              : provider
+                                                  .controller
+                                                  .value
+                                                  .buffered
+                                                  .last
+                                                  .end
+                                                  .inMilliseconds),
+                                      total: Duration(
+                                          milliseconds: provider.controller
+                                              .value.duration.inMilliseconds),
+                                      onSeek: (duration) =>
+                                          provider.seekChanged(duration),
+                                    ),
                                   ),
-                                  Row(
-                                    children: [
-                                      const Spacer(),
-                                      ButtonComponent(
-                                        singleTap: () => toggleFullScreen(),
-                                        icon: Icons.fullscreen,
-                                        color: Colors.red,
-                                      ),
-                                    ],
-                                  )
+                                  const SizedBox(width: 5),
+                                  ButtonComponent(
+                                    singleTap: () => toggleFullScreen(),
+                                    icon: Icons.fullscreen,
+                                    color: Colors.red,
+                                  ),
+                                  const SizedBox(width: 5),
                                 ],
                               ),
                             )
                           : const Center(child: SizedBox()),
-                    )
+                    ),
+                    if (provider
+                            .controller.value.errorDescription?.isNotEmpty ??
+                        false)
+                      Positioned.fill(
+                          child: Column(
+                        children: [
+                          const Spacer(),
+                          const Row(
+                            children: [
+                              Spacer(),
+                              Icon(
+                                Icons.warning,
+                                color: Colors.yellow,
+                              ),
+                              SizedBox(width: 5),
+                              Text(
+                                'Error Loading Video. Try again!',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                              Spacer(),
+                            ],
+                          ),
+                          const SizedBox(width: 5),
+                          ButtonComponent(
+                            singleTap: () =>
+                                provider.initController(widget.errorCallback),
+                            isFlipped: true,
+                            color: Colors.red,
+                            icon: Icons.refresh,
+                            size: 40,
+                          ),
+                          const Spacer(),
+                        ],
+                      )),
                   ],
                 ),
               ),

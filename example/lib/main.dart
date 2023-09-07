@@ -50,13 +50,16 @@ class HomePage extends StatelessWidget {
         SizedBox(
           // height: 200,
           child: VideoPlayerILS(
-            videoPlayerTheme: VideoPlayerTheme(
-                seekLeftColor: Colors.amber,
-                seekRightColor: Colors.blue,
-                playIconActive: Icons.ads_click,
-                playIconInactive: Icons.file_download,
-                loopIconColorActive: Colors.green,
-                seekProgressBarColor: Colors.amber),
+            // videoPlayerTheme: VideoPlayerTheme(
+            //     seekLeftColor: Colors.amber,
+            //     seekRightColor: Colors.blue,
+            //     playIconActive: Icons.ads_click,
+            //     playIconInactive: Icons.file_download,
+            //     loopIconColorActive: Colors.green,
+            //     seekProgressBarColor: Colors.amber),
+            errorCallback: (p0) {
+              debugPrint('---$p0');
+            },
             urls: [
               VideoQualityModel(
                   url:

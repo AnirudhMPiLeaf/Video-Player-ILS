@@ -24,24 +24,35 @@ class VideoProvider extends ChangeNotifier {
     )
   ];
 
-  VideoProvider(List<VideoQualityModel> link, [VideoPlayerController? cnt]) {
+  VideoProvider(List<VideoQualityModel> link, Function(dynamic) errorCallback,
+      [VideoPlayerController? cnt]) {
     url = link;
     if (cnt == null) {
-      initController();
+      initController(errorCallback);
     } else {
       controller = cnt;
     }
   }
 
-  void initController() {
+  void initController(Function(dynamic p1) errorCallback) {
     controller = VideoPlayerController.networkUrl(
         Uri.parse(url[selectedQuality].url),
         videoPlayerOptions: VideoPlayerOptions())
       ..initialize()
       ..addListener(() {
+        try {
+          if (controller.value.hasError) {
+            errorCallback(controller.value.errorDescription);
+          }
+          if (controller.value.isInitialized) {}
+          if (controller.value.isBuffering) {}
+        } catch (e) {
+          debugPrint(e.toString());
+        }
+
         notifyListeners();
       })
-      ..play()
+      // ..play()
       ..setLooping(true);
   }
 
@@ -83,9 +94,9 @@ class VideoProvider extends ChangeNotifier {
     super.dispose();
   }
 
-  void setQuality(int? value) {
+  void setQuality(int? value, Function(dynamic p1) errorCallback) {
     selectedQuality = value!;
-    initController();
+    initController(errorCallback);
     notifyListeners();
   }
 
