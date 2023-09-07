@@ -38,6 +38,7 @@ class VideoProvider extends ChangeNotifier {
   void initController(Function(dynamic p1) errorCallback) {
     showLoader = true;
     notifyListeners();
+
     controller = VideoPlayerController.networkUrl(
         Uri.parse(url[selectedQuality].url),
         videoPlayerOptions: VideoPlayerOptions())
@@ -114,6 +115,9 @@ class VideoProvider extends ChangeNotifier {
 
   void setQuality(int? value, Function(dynamic p1) errorCallback) {
     selectedQuality = value!;
+    try {
+      controller.pause();
+    } catch (_) {}
     initController(errorCallback);
     notifyListeners();
   }
