@@ -48,7 +48,8 @@ class HomePage extends StatelessWidget {
       children: [
         const Spacer(),
         SizedBox(
-          // height: 200,
+          // height: 400,
+          // width: 400,
           child: VideoPlayerILS(
             // videoPlayerTheme: VideoPlayerTheme(
             //     seekLeftColor: Colors.amber,
