@@ -40,6 +40,7 @@ class VideoProvider extends ChangeNotifier {
         Uri.parse(url[selectedQuality].url),
         videoPlayerOptions: VideoPlayerOptions())
       ..initialize()
+      ..setVolume(1)
       ..addListener(() {
         try {
           if (controller.value.hasError) {

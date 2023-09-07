@@ -8,6 +8,7 @@ import 'package:provider/provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_player_ils/plugin/data/models.dart';
 import 'package:video_player_ils/plugin/provider/video_provider.dart';
+import 'package:visibility_detector/visibility_detector.dart';
 
 import 'components.dart';
 
@@ -79,9 +80,20 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                     child: Stack(
                       // fit: isPortrait ? StackFit.loose : StackFit.expand,
                       children: [
-                        VideoPlayer(
-                          widget.controller ?? provider.controller,
-                        ),
+                        VisibilityDetector(
+                            key: const Key("unique key"),
+                            onVisibilityChanged: (VisibilityInfo info) {
+                              debugPrint(
+                                  "${info.visibleFraction} of my widget is visible");
+                              if (info.visibleFraction == 0) {
+                                provider.controller.pause();
+                              } else {
+                                provider.controller.play();
+                              }
+                            },
+                            child: VideoPlayer(
+                              widget.controller ?? provider.controller,
+                            )),
                         if (!provider.controller.value.isPlaying &&
                             (provider.controller.value.position ==
                                 Duration.zero))

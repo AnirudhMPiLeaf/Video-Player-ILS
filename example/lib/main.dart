@@ -63,8 +63,7 @@ class HomePage extends StatelessWidget {
             },
             urls: [
               VideoQualityModel(
-                  url:
-                      'https://flutter.github.io/assets-for-api-docs/assets/videos/bee.mp4',
+                  url: 'https://samplelib.com/lib/preview/mp4/sample-30s.mp4',
                   name: '360p'),
               VideoQualityModel(
                   url:
@@ -77,8 +76,24 @@ class HomePage extends StatelessWidget {
             ],
           ),
         ),
+        TextButton(
+            onPressed: () => Navigator.of(context).push(MaterialPageRoute(
+                  builder: (context) => const NavPage(),
+                )),
+            child: const Text('Navigate')),
         const Spacer(),
       ],
+    );
+  }
+}
+
+class NavPage extends StatelessWidget {
+  const NavPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(),
     );
   }
 }
