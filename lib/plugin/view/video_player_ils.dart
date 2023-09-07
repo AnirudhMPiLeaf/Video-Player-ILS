@@ -59,7 +59,7 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
         child: Consumer<VideoProvider>(
           builder: (context, provider, child) {
             return Padding(
-              padding: EdgeInsets.symmetric(horizontal: isPortrait ? 0 : 15),
+              padding: EdgeInsets.symmetric(horizontal: isPortrait ? 0 : 0),
               child: AspectRatio(
                 aspectRatio: isPortrait
                     ? (16 / 9)
