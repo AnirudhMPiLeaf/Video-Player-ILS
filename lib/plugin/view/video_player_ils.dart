@@ -15,14 +15,16 @@ class VideoPlayerILS extends StatefulWidget {
     required this.urls,
     this.controller,
     this.videoPlayerTheme,
-    this.thumb,
+    this.thumbWidget,
+    this.errorWidget,
     required this.errorCallback,
   });
   final List<VideoQualityModel> urls;
   final VideoPlayerController? controller;
   final VideoPlayerTheme? videoPlayerTheme;
   final Function(dynamic) errorCallback;
-  final Widget? thumb;
+  final Widget? thumbWidget;
+  final Widget? errorWidget;
   @override
   State<VideoPlayerILS> createState() => _VideoPlayerILSState();
 }
@@ -70,20 +72,21 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                     ),
                     if (!provider.controller.value.isPlaying &&
                         (provider.controller.value.position == Duration.zero))
-                      Positioned.fill(child: widget.thumb ?? const SizedBox()),
+                      Positioned.fill(
+                          child: widget.thumbWidget ?? const SizedBox()),
                     Positioned.fill(
                       child: InkWell(
                         onTap: () {
                           if (provider
                                   .controller.value.errorDescription?.isEmpty ??
-                              true) {
+                              true && provider.controller.value.isInitialized) {
                             overlayShow();
                           }
                         },
                         onHover: (value) {
                           if (provider
                                   .controller.value.errorDescription?.isEmpty ??
-                              true) {
+                              true && provider.controller.value.isInitialized) {
                             overlayShow();
                           }
                         },
@@ -298,36 +301,50 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
                             .controller.value.errorDescription?.isNotEmpty ??
                         false)
                       Positioned.fill(
-                          child: Column(
-                        children: [
-                          const Spacer(),
-                          const Row(
-                            children: [
-                              Spacer(),
-                              Icon(
-                                Icons.warning,
-                                color: Colors.yellow,
-                              ),
-                              SizedBox(width: 5),
-                              Text(
-                                'Error Loading Video. Try again!',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              Spacer(),
-                            ],
-                          ),
-                          const SizedBox(width: 5),
-                          ButtonComponent(
-                            singleTap: () =>
-                                provider.initController(widget.errorCallback),
-                            isFlipped: true,
-                            color: Colors.red,
-                            icon: Icons.refresh,
-                            size: 40,
-                          ),
-                          const Spacer(),
-                        ],
-                      )),
+                          child: widget.errorWidget ??
+                              Column(
+                                children: [
+                                  const Spacer(),
+                                  const Row(
+                                    children: [
+                                      Spacer(),
+                                      Icon(
+                                        Icons.warning,
+                                        color: Colors.yellow,
+                                      ),
+                                      SizedBox(width: 5),
+                                      Text(
+                                        'Error Loading Video. Try again!',
+                                        style: TextStyle(color: Colors.white),
+                                      ),
+                                      Spacer(),
+                                    ],
+                                  ),
+                                  const SizedBox(width: 5),
+                                  ButtonComponent(
+                                    singleTap: () => provider
+                                        .initController(widget.errorCallback),
+                                    isFlipped: true,
+                                    color: Colors.red,
+                                    icon: Icons.refresh,
+                                    size: 40,
+                                  ),
+                                  const Spacer(),
+                                ],
+                              )),
+                    if (provider.showLoader &&
+                        (provider.controller.value.errorDescription?.isEmpty ??
+                            true))
+                      const Positioned(
+                        left: 0,
+                        right: 0,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                            child: CircularProgressIndicator(
+                          color: Colors.red,
+                        )),
+                      )
                   ],
                 ),
               ),

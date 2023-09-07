@@ -9,6 +9,7 @@ class VideoProvider extends ChangeNotifier {
   Duration currentSeekPosition = Duration.zero;
   var selectedQuality = 0;
   bool isLooping = true;
+  bool showLoader = false;
   var qualityItems = [
     const DropdownMenuItem(
       value: 0,
@@ -43,9 +44,23 @@ class VideoProvider extends ChangeNotifier {
         try {
           if (controller.value.hasError) {
             errorCallback(controller.value.errorDescription);
+            showLoader = false;
+            notifyListeners();
           }
-          if (controller.value.isInitialized) {}
-          if (controller.value.isBuffering) {}
+          showLoader = true;
+          notifyListeners();
+          if (controller.value.isInitialized) {
+            showLoader = false;
+            notifyListeners();
+          }
+          if (controller.value.isBuffering) {
+            showLoader = true;
+            notifyListeners();
+          }
+          if (controller.value.isPlaying) {
+            showLoader = false;
+            notifyListeners();
+          }
         } catch (e) {
           debugPrint(e.toString());
         }
