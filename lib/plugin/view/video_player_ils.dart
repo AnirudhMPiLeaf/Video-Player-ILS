@@ -20,10 +20,12 @@ class VideoPlayerILS extends StatefulWidget {
     this.videoPlayerTheme,
     this.thumbWidget,
     this.errorWidget,
+    this.videoControllerILS,
     required this.errorCallback,
   });
   final List<VideoQualityModel> urls;
   final VideoPlayerController? controller;
+  final VideoControllerILS? videoControllerILS;
   final VideoPlayerTheme? videoPlayerTheme;
   final Function(dynamic) errorCallback;
   final Widget? thumbWidget;
@@ -36,6 +38,7 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
   bool shouldShowOverlay = false;
   bool isPortrait = true;
   late Timer timer;
+  VideoProvider? videoProvider;
   @override
   void initState() {
     timer = Timer.periodic(Duration.zero, (timer) {});
@@ -46,6 +49,10 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
         DeviceOrientation.portraitDown,
       ],
     );
+    if (widget.videoControllerILS != null) {
+      VideoControllerILS controller = widget.videoControllerILS!;
+      controller.updateUrls = forceInit;
+    }
     super.initState();
   }
 
@@ -68,6 +75,7 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
         ),
         child: Consumer<VideoProvider>(
           builder: (context, provider, child) {
+            videoProvider ??= provider;
             return FittedBox(
               child: SizedBox(
                 height: isPortrait ? null : MediaQuery.of(context).size.height,
@@ -402,6 +410,10 @@ class _VideoPlayerILSState extends State<VideoPlayerILS> {
         ),
       ),
     );
+  }
+
+  void forceInit(List<VideoQualityModel> urls) {
+    videoProvider!.updateUrls(urls, (p1) => widget.errorCallback);
   }
 
   void toggleFullScreen() {

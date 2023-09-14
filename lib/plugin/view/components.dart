@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_player_ils/plugin/data/models.dart';
 
 class ButtonComponent extends StatelessWidget {
   const ButtonComponent({
@@ -37,5 +38,14 @@ class ButtonComponent extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class VideoControllerILS {
+  late Function(List<VideoQualityModel>)? updateUrls;
+
+  void dispose() {
+    //Remove any data that's will cause a memory leak/render errors in here
+    updateUrls = null;
   }
 }

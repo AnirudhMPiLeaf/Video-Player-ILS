@@ -39,8 +39,29 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  var videoControllerILS = VideoControllerILS();
+
+  var urls = [
+    VideoQualityModel(
+        url: 'https://samplelib.com/lib/preview/mp4/sample-30s.mp4',
+        name: '360p'),
+    VideoQualityModel(
+        url:
+            'https://joy1.videvo.net/videvo_files/video/free/video0454/large_watermarked/_import_60648ebe8b20a7.07188709_preview.mp4',
+        name: '720p'),
+    VideoQualityModel(
+        url:
+            'https://joy1.videvo.net/videvo_files/video/free/2014-07/large_watermarked/Saint_Barthelemy_preview.mp4',
+        name: '1080p'),
+  ];
 
   @override
   Widget build(BuildContext context) {
@@ -61,19 +82,8 @@ class HomePage extends StatelessWidget {
             errorCallback: (p0) {
               debugPrint('---$p0');
             },
-            urls: [
-              VideoQualityModel(
-                  url: 'https://samplelib.com/lib/preview/mp4/sample-30s.mp4',
-                  name: '360p'),
-              VideoQualityModel(
-                  url:
-                      'https://joy1.videvo.net/videvo_files/video/free/video0454/large_watermarked/_import_60648ebe8b20a7.07188709_preview.mp4',
-                  name: '720p'),
-              VideoQualityModel(
-                  url:
-                      'https://joy1.videvo.net/videvo_files/video/free/2014-07/large_watermarked/Saint_Barthelemy_preview.mp4',
-                  name: '1080p'),
-            ],
+            urls: urls,
+            videoControllerILS: videoControllerILS,
           ),
         ),
         TextButton(
@@ -81,6 +91,25 @@ class HomePage extends StatelessWidget {
                   builder: (context) => const NavPage(),
                 )),
             child: const Text('Navigate')),
+        TextButton(
+            onPressed: () {
+              var urls = [
+                VideoQualityModel(
+                    url:
+                        'https://joy1.videvo.net/videvo_files/video/free/2014-07/large_watermarked/Saint_Barthelemy_preview.mp4',
+                    name: '1080p'),
+                VideoQualityModel(
+                    url:
+                        'https://joy1.videvo.net/videvo_files/video/free/video0454/large_watermarked/_import_60648ebe8b20a7.07188709_preview.mp4',
+                    name: '720p'),
+                VideoQualityModel(
+                    url: 'https://samplelib.com/lib/preview/mp4/sample-30s.mp4',
+                    name: '360p'),
+              ];
+              videoControllerILS.updateUrls!(urls);
+              // setState(() {});
+            },
+            child: const Text('Change Video')),
         const Spacer(),
       ],
     );

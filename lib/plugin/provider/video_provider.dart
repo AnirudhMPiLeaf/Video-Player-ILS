@@ -35,6 +35,13 @@ class VideoProvider extends ChangeNotifier {
     }
   }
 
+  void updateUrls(
+      List<VideoQualityModel> urls, Function(dynamic p1) errorCallback) {
+    url = urls;
+    notifyListeners();
+    initController((p1) => errorCallback);
+  }
+
   void initController(Function(dynamic p1) errorCallback) {
     showLoader = true;
     notifyListeners();
